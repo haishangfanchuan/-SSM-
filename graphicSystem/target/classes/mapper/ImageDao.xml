@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.theonecyl.graphicSystem.dao.IImageDao">
+    <resultMap id="image" type="top.theonecyl.graphicSystem.entity.Image">
+        <result column="image_id" property="imageId"></result>
+        <result column="image_name" property="imageName"></result>
+        <result column="createtime" property="createTime"></result>
+        <result column="image_address" property="imageAddress"></result>
+        <result column="lasttime" property="lastTime"></result>
+        <association property="user" column="user_id" javaType="top.theonecyl.graphicSystem.entity.User">
+            <id column="user_id" property="userId"></id>
+            <result column="user_name" property="username"></result>
+        </association>
+        <collection property="imageList" column="imageListId" ofType="top.theonecyl.graphicSystem.entity.ImageList">
+            <id column="image_list_id" property="imageListId"></id>
+            <result column="image_list_address" property="imageListAddress"></result>
+            <result column="image_id" property="imageId"></result>
+        </collection>
+    </resultMap>
+
+    <!--获取所有图片列表-->
+    <select id="queryImageList" resultMap="image" >
+        SELECT * from db_image
+        <where>
+            <if test="imageCondition.user!=null and imageCondition.user.userId!=null">
+               AND user_id = #{imageCondition.user.userId }
+            </if>
+            <if test="imageCondition.imageName!=null">
+               and image_name LIKE '%${imageCondition.imageName}%'
+            </if>
+        </where>
+        ORDER BY lasttime DESC LIMIT #{startImage},#{pageCount}
+    </select>
+
+    <!--查询所有图片数量-->
+    <select id="queryImageCount" resultType="Integer">
+        SELECT COUNT(image_id) AS '图片总数'
+        <where>
+            <if test="imageCondition.user!=null and imageCondition.user.userId!=null">
+              AND  user_id = #{imageCondition.user.userId }
+            </if>
+            <if test="imageCondition.imageName!=null">
+              and  image_name LIKE '%${imageCondition.imageName}%'
+            </if>
+        </where>
+        FROM db_image
+    </select>
+
+    <!--根据ID查询图片-->
+    <select id="queryImageById" resultMap="image" parameterType="Integer">
+        SELECT
+        i.image_id,i.image_name,i.image_address,i.createtime,i.lasttime,i.user_id,i.user_name,
+        il.image_list_id,il.image_list_address,il.createTime
+        from db_image i LEFT JOIN db_imagelist il
+        ON i.image_id = il.image_id
+        where i.image_id = #{imageId}
+    </select>
+
+    <!--添加图片-->
+    <insert id="addImage" useGeneratedKeys="true" keyColumn="image_id" keyProperty="imageId"
+            parameterType="top.theonecyl.graphicSystem.entity.Image">
+        INSERT INTO db_image (image_id,image_name,image_address, createtime, lasttime, user_id, user_name)
+        VALUES (#{imageId} ,#{imageName},#{imageAddress},#{createTime},#{lastTime},#{user.userId},#{userName})
+    </insert>
+
+    <!--更新图片-->
+    <update id="updateImage" useGeneratedKeys="true" keyColumn="image_id" keyProperty="imageId">
+        UPDATE db_image
+        <set>
+            <if test="imageName!=null">image_name = #{imageName},</if>
+            <if test="imageAddress!=null">image_address=#{imageAddress},</if>
+            <if test="createTime!=null">createtime = #{createTime},</if>
+            <if test="lastTime!=null">lasttime = #{lastTime}</if>
+        </set>
+        where image_id = #{imageId}
+    </update>
+
+    <!--删除图片-->
+    <delete id="delImage">
+        DELETE FROM db_image where image_id = #{imageId}
+    </delete>
+</mapper>

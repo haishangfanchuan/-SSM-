@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.theonecyl.graphicSystem.dao.IImageListDao">
+    <resultMap id="imageList" type="top.theonecyl.graphicSystem.entity.ImageList">
+        <result column="image_list_id" property="imageListId"></result>
+        <result column="image_list_address" property="imageListAddress"></result>
+        <result column="createTime" property="createTime"></result>
+        <result column="image_id" property="imageId"></result>
+    </resultMap>
+
+    <!--通过ImageId获取ImageList的所有图片-->
+    <select id="queryImageList" resultMap="imageList" parameterType="int">
+        SELECT * from db_imagelist WHERE image_id = #{imageId}
+    </select>
+
+    <!--批量插入图片-->
+    <insert id="batchInsertImageList" useGeneratedKeys="false" keyColumn="image_list_id" keyProperty="imageListId" parameterType="list">
+        INSERT INTO db_imagelist (image_list_id,image_list_address, createTime, image_id) VALUES
+        <foreach item="imageList"
+                 collection="imageLists"
+                 separator=",">
+            (#{imageList.imageListId},#{imageList.imageListAddress},#{imageList.createTime},#{imageList.imageId})
+        </foreach>
+    </insert>
+
+    <!--通过imageId删除所有图片详情-->
+    <delete id="delImageList" parameterType="int">
+        DELETE FROM db_imagelist WHERE image_list_id  = #{imageListId}
+    </delete>
+
+</mapper>

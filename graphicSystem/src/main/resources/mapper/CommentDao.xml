@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.theonecyl.graphicSystem.dao.ICommentDao">
+    <resultMap id="comment" type="top.theonecyl.graphicSystem.entity.Comment">
+        <result column="comment_id" property="commentId"></result>
+        <result column="comment_Content" property="commentContent"></result>
+        <result column="comment_Num" property="commentNum"></result>
+        <result column="createTime" property="createTime"></result>
+        <result column="image_id" property="imageId"></result>
+        <association property="article" column="article_id" javaType="top.theonecyl.graphicSystem.entity.Article">
+            <id column="article_id" property="articleId"></id>
+        </association>
+        <association property="user" column="user_id" javaType="top.theonecyl.graphicSystem.entity.User">
+            <id column="user_id" property="userId"></id>
+            <result column="user_name" property="username"></result>
+            <result column="user_img_address" property="userImgAddress"></result>
+        </association>
+    </resultMap>
+
+    <!--查询评论列表-->
+    <select id="queryCommentList" resultMap="comment" parameterType="top.theonecyl.graphicSystem.entity.Comment">
+        SELECT * FROM db_comment
+        <where>
+
+            <if test="commentCondition.article!=null and commentCondition.article.articleId!=null">
+              and  article_id = #{commentCondition.article.articleId}
+            </if>
+        </where>
+        ORDER BY createTime DESC limit #{startComment},#{pageCount}
+    </select>
+
+    <!--获取评论总数-->
+    <select id="getTotalCommentNum" resultType="Integer">
+        SELECT COUNT(comment_Id) AS '总数' FROM db_comment
+        <where>
+            <if test="commentCondition.user!=null and commentCondition.user.userId!=null">
+               AND user_id = #{commentCondition.user.userId}
+            </if>
+            <if test="commentCondition.article!=null and commentCondition.article.articleId!=null">
+               and article_id = #{commentCondition.article.articleId}
+            </if>
+        </where>
+    </select>
+
+    <!--添加评论-->
+    <insert id="addComment" useGeneratedKeys="false" keyColumn="comment_Id" keyProperty="commentId">
+        insert into db_comment (comment_Id,comment_Content, comment_Num, createTime, article_id, user_id, user_name, user_img_address) values
+        (#{comment.commentId},#{comment.commentContent}, #{comment.commentNum}, #{comment.createTime}, #{comment.article.articleId}, #{comment.user.userId}, #{comment.userName}, #{comment.userImgAddress})
+    </insert>
+
+    <!--删除评论-->
+    <delete id="delComment">
+        DELETE FROM db_comment where comment_Id = #{commentId}
+    </delete>
+</mapper>

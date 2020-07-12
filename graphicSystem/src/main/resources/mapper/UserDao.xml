@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.theonecyl.graphicSystem.dao.IUserDao">
+    <resultMap id="user" type="top.theonecyl.graphicSystem.entity.User">
+        <result column="user_id" property="userId"></result>
+        <result column="user_name" property="username"></result>
+        <result column="user_login_name" property="userLoginName"></result>
+        <result column="user_password" property="userPassword"></result>
+        <result column="user_img_address" property="userImgAddress"></result>
+        <result column="user_phonenumber" property="userPhoneNumber"></result>
+        <result column="user_email" property="userEmail"></result>
+        <result column="userAddress" property="userAddress"></result>
+        <result column="creattime" property="createTime"></result>
+        <result column="lasttime" property="lastTime"></result>
+    </resultMap>
+
+    <!--根据用户名和密码查询用户（登陆功能）-->
+    <select id="userLogin" resultMap="user" parameterType="String">
+        SELECT * from db_user where user_login_name=#{userLoginName} and user_password = #{userPassword}
+    </select>
+    <!--用户注册-->
+    <insert id="insertUser" useGeneratedKeys="true" keyColumn="user_id" keyProperty="userId" >
+        INSERT INTO db_user (user_name,user_login_name,user_password,user_img_address,user_phonenumber,user_email,userAddress,creattime,lasttime)
+         VALUES(#{username},#{userLoginName},#{userPassword},#{userImgAddress},#{userPhoneNumber},#{userEmail},#{userAddress},#{createTime},#{lastTime})
+    </insert>
+    <!--根据用户ID查询用户-->
+    <select id="queryUserById" resultMap="user" parameterType="Integer">
+        SELECT * FROM db_user where user_id=#{userId}
+    </select>
+    <!--修改用户信息-->
+    <update id="updateUser" useGeneratedKeys="true" keyColumn="user_id" keyProperty="userId">
+        UPDATE db_user
+        <set>
+            <if test="username!=null">user_name=#{username},</if>
+            <if test="userLoginName!=null">user_login_name=#{userLoginName},</if>
+            <if test="userPassword!=null" >user_password=#{userPassword},</if>
+            <if test="userImgAddress!=null" >user_img_address=#{userImgAddress},</if>
+            <if test="userPhoneNumber!=null" >user_phonenumber=#{userPhoneNumber},</if>
+            <if test="userEmail!=null" >user_email=#{userEmail},</if>
+            <if test="userAddress!=null">userAddress=#{userAddress},</if>
+            <if test="createTime!=null" >creattime=#{createTime},</if>
+            <if test="lastTime!=null" >lasttime=#{lastTime}</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+    <!--修改用户密码-->
+    <update id="updateUserPassword" useGeneratedKeys="false" keyColumn="user_id" keyProperty="userId">
+        UPDATE db_user
+        <set>
+            <if test="newPassword!=null">user_password = #{newPassword},</if>
+            <if test="userLoginName!=null">user_login_name=#{userLoginName},</if>
+            <if test="lastTime!=null">lasttime = #{lastTime}</if>
+        </set>
+        where user_id = #{userId}
+    </update>
+</mapper>

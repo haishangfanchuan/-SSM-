@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.theonecyl.graphicSystem.dao.IArticleDao">
+    <resultMap id="article" type="top.theonecyl.graphicSystem.entity.Article">
+        <result column="article_id" property="articleId"></result>
+        <result column="headline" property="headline"></result>
+        <result column="content" property="content"></result>
+        <result column="coverImgAddress" property="coverImgAddress"></result>
+        <result column="pageview" property="pageview"></result>
+        <result column="lasttime" property="lastTime"></result>
+        <result column="createTime" property="createTime"></result>
+        <association property="user" column="user_id" javaType="top.theonecyl.graphicSystem.entity.User">
+            <id column="user_id" property="userId"></id>
+            <result column="username" property="username"></result>
+        </association>
+    </resultMap>
+    <!--根据pageview对文章进行从小到达排序，并分页-->
+    <select id="queryArticleList" resultMap="article" >
+        SELECT * from db_article
+        <where>
+
+            <if test="articleCondition.userId!=null and articleCondition.user.userId!=null">
+              AND  user_id = #{articleCondition.user.userId}
+            </if>
+
+            <if test="articleCondition.headline!=null">
+               and  headline LIKE '%${articleCondition.headline}%'
+            </if>
+        </where>
+        ORDER BY lasttime DESC limit #{startArticle},#{pageCount}
+    </select>
+
+
+    <!--查询所有所有文章-->
+    <select id="findAllArticle" resultType="Integer">
+        SELECT count(article_id) AS '总数' FROM db_article
+        <where>
+            <if test="articleCondition.user!=null and articleCondition.user.userId!=null">
+               AND user_id = #{articleCondition.user.userId}
+            </if>
+            <if test="articleCondition.headline!=null">
+              and  headline LIKE '%${articleCondition.headline}%'
+            </if>
+        </where>
+    </select>
+
+    <!--根据文章id查询文章-->
+    <select id="findArticleById" resultMap="article">
+        SELECT * FROM db_article WHERE article_id = #{articleId}
+    </select>
+
+    <!--添加文章-->
+    <insert id="addArticle" useGeneratedKeys="true" keyColumn="article_id" keyProperty="articleId">
+        INSERT INTO db_article (article_id,headline,content,coverImgAddress,pageview,user_id,username,lasttime,createtime)
+        VALUES (NULL ,#{headline},#{content},#{coverImgAddress},#{pageview},#{userId},#{username},#{lastTime},#{createTime})
+    </insert>
+
+    <!--删除文章-->
+    <delete id="delArticle">
+        DELETE FROM db_article where article_id = #{articleId}
+    </delete>
+
+    <!--更新文章-->
+    <update id="updateArticle" useGeneratedKeys="true" keyColumn="article_id" keyProperty="articleId">
+        UPDATE db_article
+        <set>
+            <if test="headline!=null">headline=#{headline},</if>
+            <if test="content!=null">content=#{content},</if>
+            <if test="coverImgAddress!=null">coverImgAddress=#{coverImgAddress},</if>
+            <if test="lastTime!=null">lasttime=#{lastTime}</if>
+        </set>
+        WHERE article_id = #{articleId}
+    </update>
+</mapper>
